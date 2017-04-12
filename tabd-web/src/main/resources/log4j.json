@@ -1,0 +1,56 @@
+{
+	"loggers" : 
+	{
+		"logger" : 
+		{
+			"name" : "org.aleborrego.tabd", 
+			"level" : "info"
+		}, 
+		"root" : 
+		{
+			"level" : "info", 
+			"appender-ref" : 
+			[
+				{
+					"ref" : "Console"
+				}, 
+				{
+					"ref" : "File"
+				}
+			]
+		}
+	}, 
+	"appenders" : 
+	{
+		"Console" : 
+		{
+			"name" : "Console", 
+			"target" : "SYSTEM_OUT", 
+			"PatternLayout" : 
+			{
+				"pattern" : "%d [%t] %-5p [%c] - %m%n"
+			}
+		}, 
+		"RollingFile" : 
+		{
+			"name" : "File", 
+			"fileName" : "tabd.log", 
+			"filePattern" : "tabd.log.%d{yyyy-MM-dd}", 
+			"PatternLayout" : 
+			{
+				"pattern" : "%d [%t] %-5p [%c] - %m%n"
+			}, 
+			"Policies" : 
+			{
+				"TimeBasedTriggeringPolicy" : 
+				{
+					
+				}
+			}, 
+			"DefaultRolloverStrategy" : 
+			{
+				"max" : "5"
+			}
+		}
+	}
+}
