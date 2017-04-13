@@ -11,7 +11,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, 'build'),
     filename: 'bundle.js',
-    publicPath: '/admin'
+    publicPath: '/'
   },
   plugins: [
             // compressor

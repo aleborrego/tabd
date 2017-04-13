@@ -18,7 +18,9 @@ class TeamMembers extends Component {
       this.props.items.map(teamMember => {
         propertyComponents.push(<div>
           Name: {teamMember.name}
+          <br />
           UserName: {teamMember.userName}
+          <br />
         </div>)
       })
     } else {

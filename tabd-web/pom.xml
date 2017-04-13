@@ -85,6 +85,15 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/react/build</directory>
+				<targetPath>static</targetPath>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -151,30 +160,6 @@
 						</goals>
 						<configuration>
 							<arguments>run build</arguments>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.0.2</version>
-				<executions>
-					<execution>
-						<id>copy-web-resources</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-
-						<configuration>
-							<encoding>${project.build.sourceEncoding}</encoding>
-							<outputDirectory>${project.build.directory}/${project.build.finalName}/static</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/react/build</directory>
-								</resource>
-							</resources>
 						</configuration>
 					</execution>
 				</executions>
