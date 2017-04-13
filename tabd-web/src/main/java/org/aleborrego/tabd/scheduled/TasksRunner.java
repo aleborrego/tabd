@@ -43,6 +43,8 @@ public class TasksRunner {
 			TrelloLoader loader = (TrelloLoader) applicationContext.getBean(beanName);
 			log.info("Loading from '{}'", beanName);
 			loader.load();
+			
+			scheduledTaskRepository.delete(scheduledTask);
 		}
 	}
 

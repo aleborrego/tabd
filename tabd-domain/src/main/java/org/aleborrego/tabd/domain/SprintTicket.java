@@ -15,6 +15,7 @@
  */
 package org.aleborrego.tabd.domain;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,18 +56,22 @@ public class SprintTicket {
 	// @Column(columnDefinition = "BINARY(16)")
 	@Getter
 	private UUID id;
-	
+
 	@Getter
 	@Setter
 	private int analisisSP;
-	
+
 	@Getter
 	@Setter
 	private int estimatedSP;
-	
+
 	@Getter
 	@Setter
 	private boolean planned;
+
+	@Getter
+	@Setter
+	private LocalDate finished;
 
 	@Getter
 	@Setter

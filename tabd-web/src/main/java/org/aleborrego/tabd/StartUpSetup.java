@@ -113,6 +113,7 @@ public class StartUpSetup implements CommandLineRunner {
 			configurationRepository.save(trelloAuthKey);
 		}
 
+		// TODO check for startDate
 		Configuration currentSprint = configurationRepository.findByKee(Configuration.CURRENT_SPRINT);
 		if (currentSprint == null) {
 			log.info("Creating configuration for team");
@@ -120,7 +121,7 @@ public class StartUpSetup implements CommandLineRunner {
 			currentSprint.setKee(Configuration.CURRENT_SPRINT).setValue("-1");
 		}
 
-		if (currentSprint.getValue() != tabdConfigurationProperties.getCurrentSprint()) {
+		if (!currentSprint.getValue().equals(tabdConfigurationProperties.getCurrentSprint())) {
 			currentSprint.setValue(tabdConfigurationProperties.getCurrentSprint());
 			configurationRepository.save(currentSprint);
 
@@ -128,11 +129,12 @@ public class StartUpSetup implements CommandLineRunner {
 			String[] endDate = tabdConfigurationProperties.getSprintEndDate().split("/");
 
 			Sprint sprint = new Sprint();
-			sprint.setBoard(tabdConfigurationProperties.getCurrentBoard())
-					.setStartDate(LocalDate.of(Integer.valueOf(startDate[0]), Integer.valueOf(startDate[1]),
-							Integer.valueOf(startDate[2])))
-					.setEndDate(LocalDate.of(Integer.valueOf(endDate[0]), Integer.valueOf(endDate[1]),
-							Integer.valueOf(endDate[2])))
+			sprint.setBoard(tabdConfigurationProperties.getSprintBoard())
+					.setSprintNumber(Integer.valueOf(currentSprint.getValue()))
+					.setStartDate(LocalDate.of(Integer.valueOf(startDate[2]), Integer.valueOf(startDate[1]),
+							Integer.valueOf(startDate[1])))
+					.setEndDate(LocalDate.of(Integer.valueOf(endDate[2]), Integer.valueOf(endDate[1]),
+							Integer.valueOf(endDate[1])))
 					.setInvalidDays(tabdConfigurationProperties.getNotWorkingDays())
 					.setStoryPoints(Integer.valueOf(tabdConfigurationProperties.getStoryPoints()));
 

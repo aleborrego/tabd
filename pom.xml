@@ -71,5 +71,6 @@
 	<modules>
 		<module>tabd-domain</module>
 		<module>tabd-web</module>
+		<module>tabd-dist</module>
 	</modules>
 </project>

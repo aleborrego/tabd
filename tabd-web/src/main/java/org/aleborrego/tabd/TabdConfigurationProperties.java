@@ -30,7 +30,7 @@ public class TabdConfigurationProperties {
 	private String appKey;
 	private String authKey;
 	private String currentSprint;
-	private String currentBoard;
+	private String sprintBoard;
 	private String sprintStartDate;
 	private String sprintEndDate;
 	private String notWorkingDays;

@@ -34,7 +34,7 @@
 		"RollingFile" : 
 		{
 			"name" : "File", 
-			"fileName" : "tabd.log", 
+			"fileName" : "log/tabd.log", 
 			"filePattern" : "tabd.log.%d{yyyy-MM-dd}", 
 			"PatternLayout" : 
 			{

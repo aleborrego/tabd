@@ -45,7 +45,6 @@ import lombok.experimental.Accessors;
 public class ScheduledTask {
 	
 	public static final String LOADER_TYPE = "Loader";
-	public static final String NEW_SPRINT = "NewSprint";
 
 	@Id
 	@GeneratedValue(generator = "uuid2")

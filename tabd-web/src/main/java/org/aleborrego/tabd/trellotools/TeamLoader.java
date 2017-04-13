@@ -45,30 +45,29 @@ public class TeamLoader extends TrelloLoader {
 	@Override
 	@Transactional
 	public void load() throws LoaderException {
-		if (this.getTrello() != null) {
-			log.info("Loading team Members");
-			Configuration teamKey = configurationRepository.findByKee(Configuration.TEAM_KEE);
-
-			if (teamKey != null) {
-				List<Member> members = this.getTrello().getOrganizationMembers(teamKey.getValue());
-				for (Member member : members) {
-					TeamMember teamMember = teamMemberRepository.findByUserName(member.getUsername());
-					if (teamMember == null) {
-						teamMember = new TeamMember();
-						teamMember.setName(member.getFullName()).setUserName(member.getUsername());
-						teamMemberRepository.save(teamMember);
-						log.info("Team member {} created", teamMember);
-					} else if (log.isDebugEnabled()) {
-						log.debug("Team member {} already on DB", teamMember);
-					}
-				}
-			} else {
-				throw new LoaderException("Team not configured");
-			}
-
-		} else {
+		if (this.getTrello() == null) {
 			initTrello();
 		}
+		log.info("Loading team Members");
+		Configuration teamKey = configurationRepository.findByKee(Configuration.TEAM_KEE);
+
+		if (teamKey != null) {
+			List<Member> members = this.getTrello().getOrganizationMembers(teamKey.getValue());
+			for (Member member : members) {
+				TeamMember teamMember = teamMemberRepository.findByUserName(member.getUsername());
+				if (teamMember == null) {
+					teamMember = new TeamMember();
+					teamMember.setName(member.getFullName()).setUserName(member.getUsername());
+					teamMemberRepository.save(teamMember);
+					log.info("Team member {} created", teamMember);
+				} else if (log.isDebugEnabled()) {
+					log.debug("Team member {} already on DB", teamMember);
+				}
+			}
+		} else {
+			throw new LoaderException("Team not configured");
+		}
+
 	}
 
 }
