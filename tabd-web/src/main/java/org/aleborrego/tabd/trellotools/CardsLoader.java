@@ -181,6 +181,8 @@ public class CardsLoader extends TrelloLoader {
 								// Update Estimated
 								sprintTicket.setEstimatedSP(estimated).setFinished(date);
 							}
+							
+							//TODO planificadas / no planificadas
 
 							sprintTicketRepository.save(sprintTicket);
 

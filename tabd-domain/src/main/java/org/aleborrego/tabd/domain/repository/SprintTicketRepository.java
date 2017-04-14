@@ -15,6 +15,8 @@
  */
 package org.aleborrego.tabd.domain.repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.aleborrego.tabd.domain.Sprint;
@@ -32,5 +34,8 @@ import org.springframework.stereotype.Component;
 @Component
 public interface SprintTicketRepository extends JpaRepository<SprintTicket, UUID> {
 
+	// TODO Convertir a List<>
 	public SprintTicket findBySprintAndTicket(Sprint sprint, Ticket ticket);
+
+	public List<SprintTicket> findBySprintAndFinished(Sprint sprint, LocalDate finished);
 }

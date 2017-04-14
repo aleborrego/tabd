@@ -35,7 +35,7 @@
 		{
 			"name" : "File", 
 			"fileName" : "log/tabd.log", 
-			"filePattern" : "tabd.log.%d{yyyy-MM-dd}", 
+			"filePattern" : "log/tabd.log.%d{yyyy-MM-dd}", 
 			"PatternLayout" : 
 			{
 				"pattern" : "%d [%t] %-5p [%c] - %m%n"

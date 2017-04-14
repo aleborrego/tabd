@@ -132,9 +132,9 @@ public class StartUpSetup implements CommandLineRunner {
 			sprint.setBoard(tabdConfigurationProperties.getSprintBoard())
 					.setSprintNumber(Integer.valueOf(currentSprint.getValue()))
 					.setStartDate(LocalDate.of(Integer.valueOf(startDate[2]), Integer.valueOf(startDate[1]),
-							Integer.valueOf(startDate[1])))
+							Integer.valueOf(startDate[0])))
 					.setEndDate(LocalDate.of(Integer.valueOf(endDate[2]), Integer.valueOf(endDate[1]),
-							Integer.valueOf(endDate[1])))
+							Integer.valueOf(endDate[0])))
 					.setInvalidDays(tabdConfigurationProperties.getNotWorkingDays())
 					.setStoryPoints(Integer.valueOf(tabdConfigurationProperties.getStoryPoints()));
 
