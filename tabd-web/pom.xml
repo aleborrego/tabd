@@ -82,6 +82,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		
+		<!-- HTTPClient for proxy setup -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

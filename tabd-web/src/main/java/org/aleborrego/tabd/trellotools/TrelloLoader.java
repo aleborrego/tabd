@@ -19,6 +19,7 @@ import org.aleborrego.tabd.domain.Configuration;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import com.julienvey.trello.Trello;
 import com.julienvey.trello.impl.TrelloImpl;
@@ -38,6 +39,9 @@ public abstract class TrelloLoader {
 	@Autowired
 	private ConfigurationRepository configurationRepository;
 
+	@Autowired
+	private RestTemplate restTemplate;
+
 	@Getter
 	private Trello trello;
 
@@ -52,7 +56,7 @@ public abstract class TrelloLoader {
 			Configuration trelloAuthKey = configurationRepository.findByKee(Configuration.AUTH_KEE);
 			if (trelloAppKey != null && trelloAuthKey != null) {
 				trello = new TrelloImpl(trelloAppKey.getValue(), trelloAuthKey.getValue(),
-						new RestTemplateHttpClient());
+						new RestTemplateHttpClient(restTemplate));
 			} else {
 				log.error("Invalid app or auth key");
 				// throw new LoaderException("Invalid app or auth key");

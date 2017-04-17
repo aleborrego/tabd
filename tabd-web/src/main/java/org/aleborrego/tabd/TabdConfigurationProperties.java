@@ -37,4 +37,15 @@ public class TabdConfigurationProperties {
 	private String storyPoints;
 	private String team;
 
+	private Proxy proxy;
+
+	@Getter
+	@Setter
+	public static class Proxy {
+		private String host;
+		private String port;
+		private String user;
+		private String password;
+	}
+
 }
