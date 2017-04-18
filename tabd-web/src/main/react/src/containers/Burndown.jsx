@@ -61,7 +61,7 @@ class Burndown extends Component {
           data: this.props.downSPs
         },
         {
-          label: 'BurnUp',
+          label: 'Burnup',
           fill: false,
           lineTension: 0.1,
           backgroundColor: 'rgba(179,123,44,0.4)',
@@ -82,7 +82,7 @@ class Burndown extends Component {
           data: this.props.upSPs
         },
         {
-          label: 'Stacked (Burndown+BurnUp)',
+          label: 'Stacked (Burndown+Burnup)',
           fill: false,
           lineTension: 0.1,
           backgroundColor: 'rgba(0,0,0,0.4)',
