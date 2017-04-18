@@ -111,6 +111,8 @@ public class CardsLoader extends TrelloLoader {
 						String issueId = cardName.substring(0, index);
 						String ticketName = cardName.substring(index + 2);
 
+						// TODO split "-"
+						log.info("Loading ticket '{}'", issueId);
 						Ticket ticket = ticketRepository.findByIssueId(issueId);
 						if (ticket == null) {
 							ticket = new Ticket();
@@ -154,13 +156,17 @@ public class CardsLoader extends TrelloLoader {
 							SprintTicket sprintTicket = sprintTicketRepository.findBySprintAndTicket(sprint, ticket);
 
 							log.info("Loading actions from card: '{}'", card);
-							List<Action> actions = card.getActions(new Argument("filter", "updateCard"));
+							List<Action> actions = card.getActions();
 							LocalDate date = sprint.getStartDate();
+							LocalDate earliestDate = sprint.getEndDate();
 							for (Action action : actions) {
 								// Use last
 								LocalDate newDate = action.getDate().toInstant().atZone(ZoneId.systemDefault())
 										.toLocalDate();
-								if (action.getData().getListAfter() != null
+								if (newDate.isBefore(earliestDate)){
+									earliestDate = newDate;
+								}
+								if ("updateCard".equals(action.getType()) && action.getData().getListAfter() != null
 										&& "Terminadas".equals(action.getData().getListAfter().getName())
 										&& newDate.isAfter(date)) {
 									date = newDate;
@@ -182,8 +188,9 @@ public class CardsLoader extends TrelloLoader {
 								sprintTicket.setEstimatedSP(estimated).setFinished(date);
 							}
 							
-							//TODO planificadas / no planificadas
-
+							//Panned not planned
+							sprintTicket.setPlanned(!earliestDate.isAfter(sprint.getStartDate()));
+							
 							sprintTicketRepository.save(sprintTicket);
 
 							sprint.setLastAnalizedDate(LocalDate.now());

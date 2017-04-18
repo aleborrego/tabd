@@ -62,8 +62,12 @@ public class BurndownService {
 		responseMap.put("days", days);
 		List<Integer> expectedSPs = new ArrayList<>();
 		responseMap.put("expectedSPs", expectedSPs);
-		List<Integer> realSPs = new ArrayList<>();
-		responseMap.put("realSPs", realSPs);
+		List<Integer> stackedSPs = new ArrayList<>();
+		responseMap.put("stackedSPs", stackedSPs);
+		List<Integer> upSPs = new ArrayList<>();
+		responseMap.put("upSPs", upSPs);
+		List<Integer> downSPs = new ArrayList<>();
+		responseMap.put("downSPs", downSPs);
 
 		Sprint currentSprint = sprintRepository.findBySprintNumber(
 				Integer.valueOf(configurationRepository.findByKee(Configuration.CURRENT_SPRINT).getValue()));
@@ -87,9 +91,15 @@ public class BurndownService {
 		LocalDate dayChecked = currentSprint.getStartDate();
 
 		int plannedSP = currentSprint.getStoryPoints();
-		int realSP = 0;
+		int downSP = 0;
+		int upSP = 0;
 
 		int currentDay = 1;
+		
+		stackedSPs.add(currentSprint.getStoryPoints());
+		downSPs.add(currentSprint.getStoryPoints());
+		upSPs.add(0);
+		days.add(0);
 
 		while (invalidDaysIterator.hasNext() || dayChecked.isBefore(nextInvalidDate)) {
 			// As right now there is only finished tickets, no need to check for
@@ -97,11 +107,18 @@ public class BurndownService {
 			List<SprintTicket> finishedTickets = sprintTicketRepository.findBySprintAndFinished(currentSprint,
 					dayChecked);
 			for (SprintTicket ticket : finishedTickets) {
+				int ticketSP = 0;
 				if (ticket.getAnalisisSP() != -1) {
-					realSP += ticket.getAnalisisSP();
+					ticketSP = ticket.getAnalisisSP();
 				}
 				if (ticket.getEstimatedSP() != -1) {
-					realSP += ticket.getEstimatedSP();
+					ticketSP = ticket.getEstimatedSP();
+				}
+				
+				if (ticket.isPlanned()){
+					downSP += ticketSP;
+				} else {
+					upSP += ticketSP;
 				}
 			}
 
@@ -110,7 +127,9 @@ public class BurndownService {
 				log.info("Adding '{}'", dayChecked);
 				days.add(currentDay);
 				currentDay++;
-				realSPs.add(plannedSP - realSP);
+				stackedSPs.add(plannedSP - (downSP + upSP));
+				downSPs.add(plannedSP - downSP);
+				upSPs.add(upSP);
 			} else {
 				log.info("Day '{}' is invalid", dayChecked);
 			}

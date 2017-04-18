@@ -6,7 +6,9 @@ const DEFAULT_PROPERTIES = {
   isEditing: -1,
   days: [],
   expectedSPs: [],
-  realSPs: []
+  stackedSPs: [],
+  downSPs: [],
+  upSPs: []
 }
 
 export const burndown = (state = DEFAULT_PROPERTIES , action) => {
@@ -23,7 +25,9 @@ export const burndown = (state = DEFAULT_PROPERTIES , action) => {
         isFetching: false,
         days : action.payload.response.days,
         expectedSPs : action.payload.response.expectedSPs,
-        realSPs : action.payload.response.realSPs
+        stackedSPs : action.payload.response.stackedSPs,
+        downSPs : action.payload.response.downSPs,
+        upSPs : action.payload.response.upSPs
       }
     default:
       return state

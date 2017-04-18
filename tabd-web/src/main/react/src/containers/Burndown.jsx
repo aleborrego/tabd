@@ -58,7 +58,49 @@ class Burndown extends Component {
           pointHoverBorderWidth: 2,
           pointRadius: 1,
           pointHitRadius: 10,
-          data: this.props.realSPs
+          data: this.props.downSPs
+        },
+        {
+          label: 'BurnUp',
+          fill: false,
+          lineTension: 0.1,
+          backgroundColor: 'rgba(179,123,44,0.4)',
+          borderColor: 'rgba(242,214,0,1)',
+          borderCapStyle: 'butt',
+          borderDash: [],
+          borderDashOffset: 0.0,
+          borderJoinStyle: 'miter',
+          pointBorderColor: 'rgba(242,214,0,1)',
+          pointBackgroundColor: '#fff',
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: 'rgba(242,214,0,1)',
+          pointHoverBorderColor: 'rgba(220,220,220,1)',
+          pointHoverBorderWidth: 2,
+          pointRadius: 1,
+          pointHitRadius: 10,
+          data: this.props.upSPs
+        },
+        {
+          label: 'Stacked (Burndown+BurnUp)',
+          fill: false,
+          lineTension: 0.1,
+          backgroundColor: 'rgba(0,0,0,0.4)',
+          borderColor: 'rgba(0,0,0,1)',
+          borderCapStyle: 'butt',
+          borderDash: [],
+          borderDashOffset: 0.0,
+          borderJoinStyle: 'miter',
+          pointBorderColor: 'rgba(0,0,0,1)',
+          pointBackgroundColor: '#fff',
+          pointBorderWidth: 1,
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: 'rgba(0,0,0,1)',
+          pointHoverBorderColor: 'rgba(220,220,220,1)',
+          pointHoverBorderWidth: 2,
+          pointRadius: 1,
+          pointHitRadius: 10,
+          data: this.props.stackedSPs
         }
       ]
     }
