@@ -96,6 +96,7 @@ public class BurndownService {
 
 		int currentDay = 1;
 		
+		//At the beginning of the sprint everything is to be done.
 		stackedSPs.add(currentSprint.getStoryPoints());
 		downSPs.add(currentSprint.getStoryPoints());
 		upSPs.add(0);
@@ -142,7 +143,7 @@ public class BurndownService {
 
 		}
 
-		double sPByDay = (double) plannedSP / (double) days.size();
+		double sPByDay = (double) plannedSP / ((double) days.size() - 1L);
 
 		for (int i = 0; i < days.size(); i++) {
 			expectedSPs.add((int) Math.round(plannedSP - (sPByDay * i)));
