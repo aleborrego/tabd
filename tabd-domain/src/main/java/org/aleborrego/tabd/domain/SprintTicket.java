@@ -67,6 +67,14 @@ public class SprintTicket {
 
 	@Getter
 	@Setter
+	private int realSP;
+
+	@Getter
+	@Setter
+	private int cardinalId;
+
+	@Getter
+	@Setter
 	private boolean planned;
 
 	@Getter

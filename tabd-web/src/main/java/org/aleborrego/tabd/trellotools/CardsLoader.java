@@ -82,6 +82,7 @@ public class CardsLoader extends TrelloLoader {
 		Configuration currentSprint = configurationRepository.findByKee(Configuration.CURRENT_SPRINT);
 		String analysisPluginId = configurationRepository.findByKee(Configuration.ANALISIS_FIELD).getValue();
 		String estimatedPluginId = configurationRepository.findByKee(Configuration.ESTIMACION_FIELD).getValue();
+		String realPluginId = configurationRepository.findByKee(Configuration.TRABAJO_REAL_FIELD).getValue();
 
 		log.info("Loading current sprint");
 		Sprint sprint = sprintRepository.findBySprintNumber(Integer.valueOf(currentSprint.getValue()));
@@ -109,9 +110,18 @@ public class CardsLoader extends TrelloLoader {
 						log.info("Ignoring weird card '{}'", cardName);
 					} else {
 						String issueId = cardName.substring(0, index);
+						// Skip ':' and whitespace
 						String ticketName = cardName.substring(index + 2);
 
-						// TODO split "-"
+						int cardinal = -1;
+
+						int index2 = issueId.indexOf("-");
+
+						if (index2 != -1) {
+							cardinal = Integer.valueOf(issueId.substring(index2 + 1));
+							issueId = issueId.substring(0, index2);
+						}
+
 						log.info("Loading ticket '{}'", issueId);
 						Ticket ticket = ticketRepository.findByIssueId(issueId);
 						if (ticket == null) {
@@ -127,10 +137,9 @@ public class CardsLoader extends TrelloLoader {
 						if (plugins == null || plugins.isEmpty()) {
 							log.error("Card '{}' should have analysis or estimated", issueId);
 						} else {
-							// TODO: ¿Qué pasa si un ticket tiene análisis y
-							// desarrollo a la vez?
 							int analysis = -1;
 							int estimated = -1;
+							int real = 0;
 							try {
 								// There should be only one plugin
 								String pluginValue = plugins.get(0).getValue().replaceAll("\\\"", "\"");
@@ -150,12 +159,16 @@ public class CardsLoader extends TrelloLoader {
 								if (estimatedString != null) {
 									estimated = Integer.valueOf(estimatedString);
 								}
+								String realString = map.get(realPluginId);
+								if (realString != null) {
+									real = Integer.valueOf(realString);
+								}
 							} catch (IOException e) {
 								log.error("Something weird on deserializing plugin fields");
 							}
 
-							List<SprintTicket> sprintTickets = sprintTicketRepository.findBySprintAndTicket(sprint,
-									ticket);
+							List<SprintTicket> sprintTickets = sprintTicketRepository
+									.findBySprintAndTicketAndCardinalId(sprint, ticket, cardinal);
 
 							log.info("Loading actions from card: '{}'", card);
 							List<Action> actions = card.getActions();
@@ -175,36 +188,56 @@ public class CardsLoader extends TrelloLoader {
 								}
 							}
 
-							SprintTicket sprintTicket = null;
+							boolean planned = !earliestDate.isAfter(sprint.getStartDate());
+
+							SprintTicket analysisTicket = null;
+							SprintTicket developmentTicket = null;
 
 							for (SprintTicket st : sprintTickets) {
 								if (analysis != -1 && st.getAnalisisSP() != -1) {
-									sprintTicket = st;
-									sprintTicket.setAnalisisSP(analysis).setFinished(date);
-									break;
-								} else if (estimated != -1 && st.getEstimatedSP() != -1) {
-									sprintTicket = st;
-									sprintTicket.setEstimatedSP(estimated).setFinished(date);
-									break;
+									analysisTicket = st;
+									analysisTicket.setCardinalId(cardinal).setAnalisisSP(analysis).setFinished(date)
+											.setPlanned(planned);
+
+									// In case there is analysis and estimated
+									real = 0;
+
+									sprintTicketRepository.save(analysisTicket);
+								}
+								if (estimated != -1 && st.getEstimatedSP() != -1) {
+									developmentTicket = st;
+									developmentTicket.setCardinalId(cardinal).setEstimatedSP(estimated).setRealSP(real)
+											.setFinished(date).setPlanned(planned);
+
+									sprintTicketRepository.save(developmentTicket);
 								}
 							}
 
-							// Create the sprint ticket
-							if (sprintTicket == null) {
+							// Create the analysis ticket
+							if (analysisTicket == null && analysis != -1) {
 								// Create the ticket sprint.
-								sprintTicket = new SprintTicket();
-								sprintTicket.setSprint(sprint).setTicket(ticket).setAnalisisSP(analysis)
-										.setEstimatedSP(estimated).setFinished(date);
+								analysisTicket = new SprintTicket();
+								analysisTicket.setCardinalId(cardinal).setAnalisisSP(analysis).setFinished(date)
+										.setPlanned(planned);
+
+								// In case there is analysis and estimated
+								real = 0;
+
+								sprintTicketRepository.save(analysisTicket);
 							}
 
-							// Panned not planned
-							sprintTicket.setPlanned(!earliestDate.isAfter(sprint.getStartDate()));
+							// Create the development ticket
+							if (developmentTicket == null && estimated != -1) {
+								// Create the ticket sprint.
+								developmentTicket = new SprintTicket();
+								developmentTicket.setCardinalId(cardinal).setEstimatedSP(estimated).setRealSP(real)
+										.setFinished(date).setPlanned(planned);
 
-							sprintTicketRepository.save(sprintTicket);
+								sprintTicketRepository.save(developmentTicket);
+							}
 
 							sprint.setLastAnalizedDate(LocalDate.now());
 							sprintRepository.save(sprint);
-
 						}
 					}
 

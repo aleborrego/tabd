@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public interface SprintTicketRepository extends JpaRepository<SprintTicket, UUID> {
 
-	public List<SprintTicket> findBySprintAndTicket(Sprint sprint, Ticket ticket);
+	public List<SprintTicket> findBySprintAndTicketAndCardinalId(Sprint sprint, Ticket ticket, int cardinalId);
 
 	public List<SprintTicket> findBySprintAndFinished(Sprint sprint, LocalDate finished);
 }
