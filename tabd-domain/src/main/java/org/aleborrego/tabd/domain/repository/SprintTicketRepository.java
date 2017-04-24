@@ -34,8 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public interface SprintTicketRepository extends JpaRepository<SprintTicket, UUID> {
 
-	// TODO Convertir a List<>
-	public SprintTicket findBySprintAndTicket(Sprint sprint, Ticket ticket);
+	public List<SprintTicket> findBySprintAndTicket(Sprint sprint, Ticket ticket);
 
 	public List<SprintTicket> findBySprintAndFinished(Sprint sprint, LocalDate finished);
 }

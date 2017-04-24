@@ -123,11 +123,12 @@ public class CardsLoader extends TrelloLoader {
 							log.debug("Ticket {} already on DB", ticket);
 						}
 
-						// Card.PluginData pluginData = card.ge
 						List<PluginData> plugins = card.getPluginData();
 						if (plugins == null || plugins.isEmpty()) {
 							log.error("Card '{}' should have analysis or estimated", issueId);
 						} else {
+							// TODO: ¿Qué pasa si un ticket tiene análisis y
+							// desarrollo a la vez?
 							int analysis = -1;
 							int estimated = -1;
 							try {
@@ -153,7 +154,8 @@ public class CardsLoader extends TrelloLoader {
 								log.error("Something weird on deserializing plugin fields");
 							}
 
-							SprintTicket sprintTicket = sprintTicketRepository.findBySprintAndTicket(sprint, ticket);
+							List<SprintTicket> sprintTickets = sprintTicketRepository.findBySprintAndTicket(sprint,
+									ticket);
 
 							log.info("Loading actions from card: '{}'", card);
 							List<Action> actions = card.getActions();
@@ -163,7 +165,7 @@ public class CardsLoader extends TrelloLoader {
 								// Use last
 								LocalDate newDate = action.getDate().toInstant().atZone(ZoneId.systemDefault())
 										.toLocalDate();
-								if (newDate.isBefore(earliestDate)){
+								if (newDate.isBefore(earliestDate)) {
 									earliestDate = newDate;
 								}
 								if ("updateCard".equals(action.getType()) && action.getData().getListAfter() != null
@@ -173,24 +175,31 @@ public class CardsLoader extends TrelloLoader {
 								}
 							}
 
+							SprintTicket sprintTicket = null;
+
+							for (SprintTicket st : sprintTickets) {
+								if (analysis != -1 && st.getAnalisisSP() != -1) {
+									sprintTicket = st;
+									sprintTicket.setAnalisisSP(analysis).setFinished(date);
+									break;
+								} else if (estimated != -1 && st.getEstimatedSP() != -1) {
+									sprintTicket = st;
+									sprintTicket.setEstimatedSP(estimated).setFinished(date);
+									break;
+								}
+							}
+
 							// Create the sprint ticket
-							if (sprintTicket == null || (analysis != -1 && sprintTicket.getAnalisisSP() == -1)
-									|| estimated != -1 && sprintTicket.getEstimatedSP() == -1) {
+							if (sprintTicket == null) {
 								// Create the ticket sprint.
 								sprintTicket = new SprintTicket();
 								sprintTicket.setSprint(sprint).setTicket(ticket).setAnalisisSP(analysis)
 										.setEstimatedSP(estimated).setFinished(date);
-							} else if (analysis != -1 && sprintTicket.getAnalisisSP() != -1) {
-								// Update Analysis
-								sprintTicket.setAnalisisSP(analysis).setFinished(date);
-							} else if (estimated != -1 && sprintTicket.getEstimatedSP() != -1) {
-								// Update Estimated
-								sprintTicket.setEstimatedSP(estimated).setFinished(date);
 							}
-							
-							//Panned not planned
+
+							// Panned not planned
 							sprintTicket.setPlanned(!earliestDate.isAfter(sprint.getStartDate()));
-							
+
 							sprintTicketRepository.save(sprintTicket);
 
 							sprint.setLastAnalizedDate(LocalDate.now());
