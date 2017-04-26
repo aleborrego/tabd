@@ -72,14 +72,6 @@ public class Ticket {
 	private String title;
 
 	/**
-	 * Current state of the ticket.
-	 */
-	@Getter
-	@Setter
-	@NonNull
-	private State currentState;
-
-	/**
 	 * Story points estimated (Analysis+Development)
 	 */
 	@Getter

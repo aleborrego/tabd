@@ -95,8 +95,8 @@ public class BurndownService {
 		int upSP = 0;
 
 		int currentDay = 1;
-		
-		//At the beginning of the sprint everything is to be done.
+
+		// At the beginning of the sprint everything is to be done.
 		stackedSPs.add(currentSprint.getStoryPoints());
 		downSPs.add(currentSprint.getStoryPoints());
 		upSPs.add(0);
@@ -105,21 +105,14 @@ public class BurndownService {
 		while (invalidDaysIterator.hasNext() || dayChecked.isBefore(nextInvalidDate)) {
 			// As right now there is only finished tickets, no need to check for
 			// the state or anything else.
-			List<SprintTicket> finishedTickets = sprintTicketRepository.findBySprintAndFinished(currentSprint,
-					dayChecked);
+			List<SprintTicket> finishedTickets = sprintTicketRepository
+					.findBySprintAndUpdatedAndStateIsFinal(currentSprint, dayChecked, Boolean.TRUE);
+
 			for (SprintTicket ticket : finishedTickets) {
-				int ticketSP = 0;
-				if (ticket.getAnalisisSP() != -1) {
-					ticketSP = ticket.getAnalisisSP();
-				}
-				if (ticket.getEstimatedSP() != -1) {
-					ticketSP = ticket.getEstimatedSP();
-				}
-				
-				if (ticket.isPlanned()){
-					downSP += ticketSP;
+				if (ticket.isPlanned()) {
+					downSP += ticket.getEstimatedSP();
 				} else {
-					upSP += ticketSP;
+					upSP += ticket.getEstimatedSP();
 				}
 			}
 
@@ -134,7 +127,7 @@ public class BurndownService {
 			} else {
 				log.info("Day '{}' is invalid", dayChecked);
 			}
-			
+
 			if (dayChecked.isEqual(nextInvalidDate)) {
 				nextInvalidDate = invalidDaysIterator.next();
 			}

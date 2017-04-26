@@ -44,7 +44,7 @@ public class TeamLoader extends TrelloLoader {
 
 	@Override
 	@Transactional
-	public void load() throws LoaderException {
+	public void load(String... arguments) throws LoaderException {
 		if (this.getTrello() == null) {
 			initTrello();
 		}

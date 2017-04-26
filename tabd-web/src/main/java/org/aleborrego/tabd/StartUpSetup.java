@@ -19,8 +19,10 @@ import java.time.LocalDate;
 
 import javax.transaction.Transactional;
 
+import org.aleborrego.tabd.domain.State;
 import org.aleborrego.tabd.domain.Configuration;
 import org.aleborrego.tabd.domain.Sprint;
+import org.aleborrego.tabd.domain.repository.StateRepository;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
 import org.aleborrego.tabd.domain.repository.SprintRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +45,9 @@ public class StartUpSetup implements CommandLineRunner {
 
 	@Autowired
 	private SprintRepository sprintRepository;
+
+	@Autowired
+	private StateRepository boardColumnRepository;
 
 	/**
 	 * Event triggered at the initialization of the platform. It is used to set
@@ -140,5 +145,40 @@ public class StartUpSetup implements CommandLineRunner {
 
 			sprintRepository.save(sprint);
 		}
+
+		State state = new State();
+		state.setName("Backlog Sprint").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+				.setIsSprintRelated(Boolean.TRUE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("Sprint Analizando").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
+				.setIsSprintRelated(Boolean.TRUE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("En desarrollo").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
+				.setIsSprintRelated(Boolean.TRUE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("En pruebas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
+				.setIsSprintRelated(Boolean.TRUE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("Terminadas").setIsFinal(Boolean.TRUE).setIsStarted(Boolean.TRUE)
+				.setIsSprintRelated(Boolean.TRUE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("Backlog No Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+				.setIsSprintRelated(Boolean.FALSE);
+		boardColumnRepository.save(state);
+
+		state = new State();
+		state.setName("Backlog Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+				.setIsSprintRelated(Boolean.FALSE);
+		boardColumnRepository.save(state);
 	}
 }

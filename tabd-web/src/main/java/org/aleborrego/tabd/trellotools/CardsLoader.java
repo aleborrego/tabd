@@ -20,16 +20,19 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
 import org.aleborrego.tabd.domain.Configuration;
 import org.aleborrego.tabd.domain.Sprint;
 import org.aleborrego.tabd.domain.SprintTicket;
+import org.aleborrego.tabd.domain.State;
 import org.aleborrego.tabd.domain.Ticket;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
 import org.aleborrego.tabd.domain.repository.SprintRepository;
 import org.aleborrego.tabd.domain.repository.SprintTicketRepository;
+import org.aleborrego.tabd.domain.repository.StateRepository;
 import org.aleborrego.tabd.domain.repository.TicketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,8 +59,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CardsLoader extends TrelloLoader {
 
-	private static final String TERMINADAS = "Terminadas";
-
 	@Autowired
 	private ConfigurationRepository configurationRepository;
 
@@ -70,9 +71,12 @@ public class CardsLoader extends TrelloLoader {
 	@Autowired
 	private SprintRepository sprintRepository;
 
+	@Autowired
+	private StateRepository stateRepository;
+
 	@Override
 	@Transactional
-	public void load() throws LoaderException {
+	public void load(String... arguments) throws LoaderException {
 		if (this.getTrello() == null) {
 			initTrello();
 		}
@@ -80,176 +84,171 @@ public class CardsLoader extends TrelloLoader {
 
 		log.info("Loading configurations");
 		Configuration currentSprint = configurationRepository.findByKee(Configuration.CURRENT_SPRINT);
-		String analysisPluginId = configurationRepository.findByKee(Configuration.ANALISIS_FIELD).getValue();
-		String estimatedPluginId = configurationRepository.findByKee(Configuration.ESTIMACION_FIELD).getValue();
-		String realPluginId = configurationRepository.findByKee(Configuration.TRABAJO_REAL_FIELD).getValue();
 
 		log.info("Loading current sprint");
 		Sprint sprint = sprintRepository.findBySprintNumber(Integer.valueOf(currentSprint.getValue()));
 		if (sprint != null) {
 			String board = sprint.getBoard();
 
-			log.info("Invoking trello to load \"Terminadas\" list");
+			log.info("Invoking trello to load lists, from the board: {}", board);
 			List<TList> lists = this.getTrello().getBoardLists(board);
-			String terminadasListId = null;
-			for (TList list : lists) {
-				if (TERMINADAS.equalsIgnoreCase(list.getName())) {
-					terminadasListId = list.getId();
-					log.debug("Terminadas found :)");
-					break;
-				}
-			}
 
-			if (terminadasListId != null) {
+			for (TList list : lists) {
+				State state = stateRepository.findByName(list.getName());
+				String listId = list.getId();
+
 				log.info("Loading Cards from \"Termiandas\" list");
-				List<Card> cards = this.getTrello().getListCards(terminadasListId, new Argument("pluginData", "true"));
+				List<Card> cards = this.getTrello().getListCards(listId, new Argument("pluginData", "true"));
 				for (Card card : cards) {
 					String cardName = card.getName();
-					int index = cardName.indexOf(":");
-					if (index == -1) {
-						log.info("Ignoring weird card '{}'", cardName);
-					} else {
-						String issueId = cardName.substring(0, index);
-						// Skip ':' and whitespace
-						String ticketName = cardName.substring(index + 2);
 
-						int cardinal = -1;
+					log.info("Loading ticket for '{}'", cardName);
+					Ticket ticket = loadTicket(cardName);
 
-						int index2 = issueId.indexOf("-");
+					if (ticket != null && state.getIsSprintRelated()) {
 
-						if (index2 != -1) {
-							cardinal = Integer.valueOf(issueId.substring(index2 + 1));
-							issueId = issueId.substring(0, index2);
+						Map<String, String> pluginFields = getPluginFields(card);
+
+						log.info("Loading actions from card: '{}'", card);
+						List<Action> actions = card.getActions();
+						LocalDate date = sprint.getStartDate();
+						LocalDate earliestDate = sprint.getEndDate();
+						for (Action action : actions) {
+							// Use last
+							LocalDate newDate = action.getDate().toInstant().atZone(ZoneId.systemDefault())
+									.toLocalDate();
+							if (newDate.isBefore(earliestDate)) {
+								earliestDate = newDate;
+							}
+							if ("updateCard".equals(action.getType()) && action.getData().getListAfter() != null
+									&& list.getName().equals(action.getData().getListAfter().getName())
+									&& newDate.isAfter(date)) {
+								date = newDate;
+							}
 						}
 
-						log.info("Loading ticket '{}'", issueId);
-						Ticket ticket = ticketRepository.findByIssueId(issueId);
-						if (ticket == null) {
-							ticket = new Ticket();
-							ticket.setIssueId(issueId).setTitle(ticketName);
-							ticketRepository.save(ticket);
-							log.info("Ticket {} created", ticket);
-						} else if (log.isDebugEnabled()) {
-							log.debug("Ticket {} already on DB", ticket);
-						}
+						boolean planned = !earliestDate.isAfter(sprint.getStartDate());
 
-						List<PluginData> plugins = card.getPluginData();
-						if (plugins == null || plugins.isEmpty()) {
-							log.error("Card '{}' should have analysis or estimated", issueId);
-						} else {
-							int analysis = -1;
-							int estimated = -1;
-							int real = 0;
-							try {
-								// There should be only one plugin
-								String pluginValue = plugins.get(0).getValue().replaceAll("\\\"", "\"");
-								// remove Fields tag
-								String pluginFields = pluginValue.substring(10, pluginValue.length() - 1);
-								// Map to object
-								ObjectMapper mapper = new ObjectMapper();
-								HashMap<String, String> map = mapper.readValue(pluginFields,
-										new TypeReference<HashMap<String, String>>() {
-										});
+						loadSprintTickets(sprint, ticket, pluginFields, planned, state, date, card.getId());
 
-								String analysisString = map.get(analysisPluginId);
-								if (analysisString != null) {
-									analysis = Integer.valueOf(analysisString);
-								}
-								String estimatedString = map.get(estimatedPluginId);
-								if (estimatedString != null) {
-									estimated = Integer.valueOf(estimatedString);
-								}
-								String realString = map.get(realPluginId);
-								if (realString != null) {
-									real = Integer.valueOf(realString);
-								}
-							} catch (IOException e) {
-								log.error("Something weird on deserializing plugin fields");
-							}
-
-							List<SprintTicket> sprintTickets = sprintTicketRepository
-									.findBySprintAndTicketAndCardinalId(sprint, ticket, cardinal);
-
-							log.info("Loading actions from card: '{}'", card);
-							List<Action> actions = card.getActions();
-							LocalDate date = sprint.getStartDate();
-							LocalDate earliestDate = sprint.getEndDate();
-							for (Action action : actions) {
-								// Use last
-								LocalDate newDate = action.getDate().toInstant().atZone(ZoneId.systemDefault())
-										.toLocalDate();
-								if (newDate.isBefore(earliestDate)) {
-									earliestDate = newDate;
-								}
-								if ("updateCard".equals(action.getType()) && action.getData().getListAfter() != null
-										&& "Terminadas".equals(action.getData().getListAfter().getName())
-										&& newDate.isAfter(date)) {
-									date = newDate;
-								}
-							}
-
-							boolean planned = !earliestDate.isAfter(sprint.getStartDate());
-
-							SprintTicket analysisTicket = null;
-							SprintTicket developmentTicket = null;
-
-							for (SprintTicket st : sprintTickets) {
-								if (analysis != -1 && st.getAnalisisSP() != -1) {
-									analysisTicket = st;
-									analysisTicket.setCardinalId(cardinal).setAnalisisSP(analysis).setFinished(date)
-											.setPlanned(planned);
-
-									// In case there is analysis and estimated
-									real = 0;
-
-									sprintTicketRepository.save(analysisTicket);
-								}
-								if (estimated != -1 && st.getEstimatedSP() != -1) {
-									developmentTicket = st;
-									developmentTicket.setCardinalId(cardinal).setEstimatedSP(estimated).setRealSP(real)
-											.setFinished(date).setPlanned(planned);
-
-									sprintTicketRepository.save(developmentTicket);
-								}
-							}
-
-							// Create the analysis ticket
-							if (analysisTicket == null && analysis != -1) {
-								// Create the ticket sprint.
-								analysisTicket = new SprintTicket();
-								analysisTicket.setCardinalId(cardinal).setAnalisisSP(analysis).setFinished(date)
-										.setPlanned(planned);
-
-								// In case there is analysis and estimated
-								real = 0;
-
-								sprintTicketRepository.save(analysisTicket);
-							}
-
-							// Create the development ticket
-							if (developmentTicket == null && estimated != -1) {
-								// Create the ticket sprint.
-								developmentTicket = new SprintTicket();
-								developmentTicket.setCardinalId(cardinal).setEstimatedSP(estimated).setRealSP(real)
-										.setFinished(date).setPlanned(planned);
-
-								sprintTicketRepository.save(developmentTicket);
-							}
-
-							sprint.setLastAnalizedDate(LocalDate.now());
-							sprintRepository.save(sprint);
-						}
 					}
 
 				}
-			} else {
-				throw new LoaderException("Board does not have a \"Terminadas\" list");
 			}
 
 		} else {
 			throw new LoaderException("Sprint not configured");
 		}
 
+	}
+
+	/**
+	 * Load or creates ticket
+	 * 
+	 * @param cardName
+	 * @return
+	 */
+	private Ticket loadTicket(String cardName) {
+		Ticket ticket = null;
+		int index = cardName.indexOf(":");
+		if (index == -1) {
+			log.info("Ignoring weird card '{}'", cardName);
+		} else {
+			String issueId = cardName.substring(0, index);
+			// Skip ':' and whitespace
+			String ticketName = cardName.substring(index + 2);
+
+			log.info("Loading ticket '{}'", issueId);
+			ticket = ticketRepository.findByIssueId(issueId);
+			if (ticket == null) {
+				ticket = new Ticket();
+				ticket.setIssueId(issueId).setTitle(ticketName);
+				ticketRepository.save(ticket);
+				log.info("Ticket {} created", ticket);
+			} else if (log.isDebugEnabled()) {
+				log.debug("Ticket {} already on DB", ticket);
+			}
+		}
+		return ticket;
+	}
+
+	/**
+	 * Load PluginFields
+	 * 
+	 * @param card
+	 * @return
+	 */
+	private Map<String, String> getPluginFields(Card card) {
+		Map<String, String> pluginFields = new HashMap<>();
+
+		List<PluginData> plugins = card.getPluginData();
+
+		try {
+			// Now, there should be only one plugin
+			// TODO take into account cases with multiple/none pugins
+			if (plugins == null || plugins.isEmpty()) {
+				log.error("Card '{}' should have plugins", card);
+			} else {
+				String pluginValue = plugins.get(0).getValue().replaceAll("\\\"", "\"");
+				// remove Fields tag
+				String pluginFieldsSerialized = pluginValue.substring(10, pluginValue.length() - 1);
+				// Map to object
+				ObjectMapper mapper = new ObjectMapper();
+				pluginFields = mapper.readValue(pluginFieldsSerialized, new TypeReference<HashMap<String, String>>() {
+				});
+			}
+
+		} catch (IOException e) {
+			log.error("Something weird happened on deserializing plugin fields", e);
+		}
+
+		return pluginFields;
+	}
+
+	/**
+	 * Load and update or creates SprintTickets
+	 * 
+	 * @param cardName
+	 * @return
+	 */
+	private SprintTicket loadSprintTickets(Sprint sprint, Ticket ticket, Map<String, String> pluginFields,
+			boolean planned, State state, LocalDate updated, String cardId) {
+
+		// TODO Make it config
+		String analysisPluginId = configurationRepository.findByKee(Configuration.ANALISIS_FIELD).getValue();
+		String estimatedPluginId = configurationRepository.findByKee(Configuration.ESTIMACION_FIELD).getValue();
+		String realPluginId = configurationRepository.findByKee(Configuration.TRABAJO_REAL_FIELD).getValue();
+
+		int estimated = 0;
+		int real = 0;
+		String analysisString = pluginFields.get(analysisPluginId);
+		if (analysisString != null) {
+			estimated += Integer.valueOf(analysisString);
+		}
+		String estimatedString = pluginFields.get(estimatedPluginId);
+		if (estimatedString != null) {
+			estimated += Integer.valueOf(estimatedString);
+		}
+		String realString = pluginFields.get(realPluginId);
+		if (realString != null) {
+			real = Integer.valueOf(realString);
+		}
+
+		SprintTicket sprintTicket = sprintTicketRepository.findBySprintAndTicketAndTrelloCardId(sprint, ticket, cardId);
+
+		if (sprintTicket == null) {
+			sprintTicket = new SprintTicket();
+			sprintTicket.setSprint(sprint).setTicket(ticket).setTrelloCardId(cardId);
+		}
+
+		sprintTicket.setEstimatedSP(estimated).setWorkedSP(real).setPlanned(planned).setUpdated(updated)
+				.setState(state);
+		sprintTicketRepository.save(sprintTicket);
+
+		sprint.setLastAnalizedDate(LocalDate.now());
+		sprintRepository.save(sprint);
+
+		return sprintTicket;
 	}
 
 }

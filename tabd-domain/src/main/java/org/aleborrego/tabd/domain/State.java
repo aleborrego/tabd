@@ -16,12 +16,54 @@
 package org.aleborrego.tabd.domain;
 
 /**
- * State of a ticket
+ * State of a ticket. It's name must be exactly the column name on trello board.
  * 
  * @author aleborrego
  *
  */
-public enum State {
-	NOT_STARTED, ANALYSIS_IN_PROGRESS, ANALYSIS_FINISHED, DEVELOPMENT_IN_PROGRESS, FINISHED
+import java.util.UUID;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+import org.hibernate.annotations.GenericGenerator;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+
+@NoArgsConstructor
+@ToString
+@EqualsAndHashCode(exclude = { "id" })
+@Accessors(chain = true)
+@Entity
+public class State {
+
+	@Id
+	@GeneratedValue(generator = "uuid2")
+	@GenericGenerator(name = "uuid2", strategy = "uuid2")
+	// @Column(columnDefinition = "BINARY(16)")
+	@Getter
+	private UUID id;
+
+	@Getter
+	@Setter
+	private String name;
+
+	@Getter
+	@Setter
+	private Boolean isFinal;
+	
+	@Getter
+	@Setter
+	private Boolean isStarted;
+	
+	@Getter
+	@Setter
+	private Boolean isSprintRelated;
 
 }

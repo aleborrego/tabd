@@ -59,19 +59,15 @@ public class SprintTicket {
 
 	@Getter
 	@Setter
-	private int analisisSP;
-
-	@Getter
-	@Setter
 	private int estimatedSP;
 
 	@Getter
 	@Setter
-	private int realSP;
+	private int workedSP;
 
 	@Getter
 	@Setter
-	private int cardinalId;
+	private String trelloCardId;
 
 	@Getter
 	@Setter
@@ -79,7 +75,12 @@ public class SprintTicket {
 
 	@Getter
 	@Setter
-	private LocalDate finished;
+	private LocalDate updated;
+
+	@Getter
+	@Setter
+	@ManyToOne
+	State state;
 
 	@Getter
 	@Setter

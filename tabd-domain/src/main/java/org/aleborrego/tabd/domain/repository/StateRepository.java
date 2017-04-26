@@ -15,26 +15,20 @@
  */
 package org.aleborrego.tabd.domain.repository;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
-import org.aleborrego.tabd.domain.Sprint;
-import org.aleborrego.tabd.domain.SprintTicket;
-import org.aleborrego.tabd.domain.Ticket;
+import org.aleborrego.tabd.domain.State;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 /**
- * Repository for {@link SprintTicket}.
+ * Repository for {@link State}.
  * 
  * @author aleborrego
  *
  */
 @Component
-public interface SprintTicketRepository extends JpaRepository<SprintTicket, UUID> {
+public interface StateRepository extends JpaRepository<State, UUID> {
 
-	public SprintTicket findBySprintAndTicketAndTrelloCardId(Sprint sprint, Ticket ticket, String trelloCardId);
-
-	public List<SprintTicket> findBySprintAndUpdatedAndStateIsFinal(Sprint sprint, LocalDate updated, Boolean isFinal);
+	public State findByName(String name);
 }

@@ -67,6 +67,6 @@ public abstract class TrelloLoader {
 	/**
 	 * Load elements from trello
 	 */
-	public abstract void load() throws LoaderException;
+	public abstract void load(String... arguments) throws LoaderException;
 
 }
