@@ -124,8 +124,8 @@ public class BurndownService {
 				stackedSPs.add(plannedSP - (downSP + upSP));
 				downSPs.add(plannedSP - downSP);
 				upSPs.add(upSP);
-			} else {
-				log.info("Day '{}' is invalid", dayChecked);
+			} else if (log.isDebugEnabled()){
+				log.debug("Day '{}' is invalid", dayChecked);
 			}
 
 			if (dayChecked.isEqual(nextInvalidDate)) {
