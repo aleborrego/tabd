@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.aleborrego.tabd.trellotools;
+package org.aleborrego.tabd.loader;
 
 public class LoaderException extends Exception {
 

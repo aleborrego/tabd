@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.aleborrego.tabd.trellotools;
+package org.aleborrego.tabd.loader.trello;
 
 import org.aleborrego.tabd.domain.Configuration;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
+import org.aleborrego.tabd.loader.Loader;
+import org.aleborrego.tabd.loader.LoaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -34,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 @Component
 @Slf4j
-public abstract class TrelloLoader {
+public abstract class TrelloLoader implements Loader {
 
 	@Autowired
 	private ConfigurationRepository configurationRepository;
@@ -59,14 +61,8 @@ public abstract class TrelloLoader {
 						new RestTemplateHttpClient(restTemplate));
 			} else {
 				log.error("Invalid app or auth key");
-				// throw new LoaderException("Invalid app or auth key");
 			}
 		}
 	}
-
-	/**
-	 * Load elements from trello
-	 */
-	public abstract void load(String... arguments) throws LoaderException;
 
 }

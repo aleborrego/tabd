@@ -20,32 +20,23 @@ import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 import org.hibernate.annotations.GenericGenerator;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
-/**
- * Entity Representing a task.
- * 
- * @author aleborrego
- *
- */
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(exclude = { "id" })
 @Accessors(chain = true)
 @Entity
-public class ScheduledTask {
-	
-	public static final String LOADER_TYPE = "Loader";
-	public static final String MEASURE_TYPE = "Measure";
+public class Measure {
 
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -56,12 +47,16 @@ public class ScheduledTask {
 
 	@Getter
 	@Setter
-	@NonNull
-	private String type;
+	@ManyToOne
+	private Metric metric;
 
 	@Getter
 	@Setter
-	@NonNull
-	private String extraInfo;
+	@ManyToOne
+	private Sprint sprint;
+
+	@Getter
+	@Setter
+	private Double value;
 
 }

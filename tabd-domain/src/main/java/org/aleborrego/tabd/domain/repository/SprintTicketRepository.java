@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.aleborrego.tabd.domain.Sprint;
 import org.aleborrego.tabd.domain.SprintTicket;
+import org.aleborrego.tabd.domain.State;
 import org.aleborrego.tabd.domain.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -37,4 +38,17 @@ public interface SprintTicketRepository extends JpaRepository<SprintTicket, UUID
 	public SprintTicket findBySprintAndTicketAndTrelloCardId(Sprint sprint, Ticket ticket, String trelloCardId);
 
 	public List<SprintTicket> findBySprintAndUpdatedAndStateIsFinal(Sprint sprint, LocalDate updated, Boolean isFinal);
+
+	public List<SprintTicket> findBySprintAndUpdatedAndStateIsStarted(Sprint sprint, LocalDate updated,
+			Boolean isStarted);
+
+	public List<SprintTicket> findBySprintAndUpdatedAndStateIn(Sprint sprint, LocalDate updated, List<State> states);
+
+	public List<SprintTicket> findBySprintAndPlannedAndStateName(Sprint sprint, boolean planned, String name);
+
+	public List<SprintTicket> findBySprintAndStateName(Sprint sprint, String name);
+
+	public List<SprintTicket> findBySprintAndPlannedAndStateIn(Sprint sprint, boolean planned, List<State> states);
+
+	public List<SprintTicket> findBySprintAndStateIn(Sprint sprint, List<State> states);
 }

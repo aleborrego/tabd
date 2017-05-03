@@ -15,25 +15,23 @@
  */
 package org.aleborrego.tabd.domain.repository;
 
-import java.util.List;
 import java.util.UUID;
 
-import org.aleborrego.tabd.domain.State;
+import org.aleborrego.tabd.domain.Measure;
+import org.aleborrego.tabd.domain.Metric;
+import org.aleborrego.tabd.domain.Sprint;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 
 /**
- * Repository for {@link State}.
+ * Repository for {@link Measure}
  * 
  * @author aleborrego
  *
  */
 @Component
-public interface StateRepository extends JpaRepository<State, UUID> {
+public interface MeasureRepository extends JpaRepository<Measure, UUID> {
+	
+	public Measure findBySprintAndMetric(Sprint sprint, Metric metric); 
 
-	public State findByName(String name);
-	
-	public List<State> findByIsFinal(boolean isFinal);
-	
-	public List<State> findByIsStarted(boolean isStarted);
 }

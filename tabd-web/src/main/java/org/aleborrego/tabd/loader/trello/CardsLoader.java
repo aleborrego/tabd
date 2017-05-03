@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.aleborrego.tabd.trellotools;
+package org.aleborrego.tabd.loader.trello;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -34,6 +34,7 @@ import org.aleborrego.tabd.domain.repository.SprintRepository;
 import org.aleborrego.tabd.domain.repository.SprintTicketRepository;
 import org.aleborrego.tabd.domain.repository.StateRepository;
 import org.aleborrego.tabd.domain.repository.TicketRepository;
+import org.aleborrego.tabd.loader.LoaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

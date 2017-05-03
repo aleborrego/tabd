@@ -26,26 +26,19 @@ import org.hibernate.annotations.GenericGenerator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
-/**
- * Entity Representing a task.
- * 
- * @author aleborrego
- *
- */
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode(exclude = { "id" })
 @Accessors(chain = true)
 @Entity
-public class ScheduledTask {
+public class Metric {
 	
-	public static final String LOADER_TYPE = "Loader";
-	public static final String MEASURE_TYPE = "Measure";
+	public final static String METRIC_ESTIMATED = "estimated";
+	public final static String METRIC_WORKED = "worked";
 
 	@Id
 	@GeneratedValue(generator = "uuid2")
@@ -56,12 +49,25 @@ public class ScheduledTask {
 
 	@Getter
 	@Setter
-	@NonNull
-	private String type;
+	private String var;
 
 	@Getter
 	@Setter
-	@NonNull
-	private String extraInfo;
+	private String name;
+
+	/**
+	 * Represents an arithmetic expression. {"var": "name"} to use the result from
+	 * another metric.
+	 * {"fieldType": "estimated|worked","cardPlanned": "yes|no","state"="state","stateStarted": "yes|no", "stateFinished": "yes|no"}
+	 * to evaluate fields in a card.
+	 * Order of precedence:
+	 * 		var
+	 * 		state
+	 * 		stateFinihed
+	 * 		stateStarted
+	 */
+	@Getter
+	@Setter
+	private String expression;
 
 }

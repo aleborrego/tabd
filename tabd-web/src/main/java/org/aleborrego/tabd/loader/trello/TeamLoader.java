@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.aleborrego.tabd.trellotools;
+package org.aleborrego.tabd.loader.trello;
 
 import java.util.List;
 
@@ -23,6 +23,7 @@ import org.aleborrego.tabd.domain.Configuration;
 import org.aleborrego.tabd.domain.TeamMember;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
 import org.aleborrego.tabd.domain.repository.TeamMemberRepository;
+import org.aleborrego.tabd.loader.LoaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -19,12 +19,14 @@ import java.time.LocalDate;
 
 import javax.transaction.Transactional;
 
-import org.aleborrego.tabd.domain.State;
 import org.aleborrego.tabd.domain.Configuration;
+import org.aleborrego.tabd.domain.Metric;
 import org.aleborrego.tabd.domain.Sprint;
-import org.aleborrego.tabd.domain.repository.StateRepository;
+import org.aleborrego.tabd.domain.State;
 import org.aleborrego.tabd.domain.repository.ConfigurationRepository;
+import org.aleborrego.tabd.domain.repository.MetricRepository;
 import org.aleborrego.tabd.domain.repository.SprintRepository;
+import org.aleborrego.tabd.domain.repository.StateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 
@@ -47,7 +49,10 @@ public class StartUpSetup implements CommandLineRunner {
 	private SprintRepository sprintRepository;
 
 	@Autowired
-	private StateRepository boardColumnRepository;
+	private StateRepository stateRepository;
+
+	@Autowired
+	private MetricRepository metricRepository;
 
 	/**
 	 * Event triggered at the initialization of the platform. It is used to set
@@ -146,39 +151,124 @@ public class StartUpSetup implements CommandLineRunner {
 			sprintRepository.save(sprint);
 		}
 
-		State state = new State();
-		state.setName("Backlog Sprint").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
-				.setIsSprintRelated(Boolean.TRUE);
-		boardColumnRepository.save(state);
+		State state = stateRepository.findByName("Backlog Sprint");
+		if (state == null) {
+			state = new State();
+			state.setName("Backlog Sprint").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+					.setIsSprintRelated(Boolean.TRUE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("Sprint Analizando").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
-				.setIsSprintRelated(Boolean.TRUE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("Sprint Analizando");
+		if (state == null) {
+			state = new State();
+			state.setName("Sprint Analizando").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+					.setIsSprintRelated(Boolean.TRUE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("En desarrollo").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
-				.setIsSprintRelated(Boolean.TRUE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("En desarrollo");
+		if (state == null) {
+			state = new State();
+			state.setName("En desarrollo").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
+					.setIsSprintRelated(Boolean.TRUE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("En pruebas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
-				.setIsSprintRelated(Boolean.TRUE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("En pruebas");
+		if (state == null) {
+			state = new State();
+			state.setName("En pruebas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.TRUE)
+					.setIsSprintRelated(Boolean.TRUE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("Terminadas").setIsFinal(Boolean.TRUE).setIsStarted(Boolean.TRUE)
-				.setIsSprintRelated(Boolean.TRUE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("Terminadas");
+		if (state == null) {
+			state = new State();
+			state.setName("Terminadas").setIsFinal(Boolean.TRUE).setIsStarted(Boolean.TRUE)
+					.setIsSprintRelated(Boolean.TRUE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("Backlog No Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
-				.setIsSprintRelated(Boolean.FALSE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("Backlog No Estimadas");
+		if (state == null) {
+			state = new State();
+			state.setName("Backlog No Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+					.setIsSprintRelated(Boolean.FALSE);
+			stateRepository.save(state);
+		}
 
-		state = new State();
-		state.setName("Backlog Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
-				.setIsSprintRelated(Boolean.FALSE);
-		boardColumnRepository.save(state);
+		state = stateRepository.findByName("Backlog Estimadas");
+		if (state == null) {
+			state = new State();
+			state.setName("Backlog Estimadas").setIsFinal(Boolean.FALSE).setIsStarted(Boolean.FALSE)
+					.setIsSprintRelated(Boolean.FALSE);
+			stateRepository.save(state);
+		}
+
+		Metric metric = metricRepository.findByName("EstimadasTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("EstimadasTerminadas").setVar("ET")
+					.setExpression("{\"fieldType\":\"estimated\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("RealTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("RealTerminadas").setVar("RT")
+					.setExpression("{\"fieldType\":\"worked\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("EstimadasEmpezadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("Estimadas").setVar("EE")
+					.setExpression("{\"fieldType\":\"estimated\",\"stateStarted\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("RealEmpezadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("Real").setVar("RE").setExpression("{\"fieldType\":\"worked\",\"stateStarted\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("EstimadasPlanificadasTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("EstimadasPlanificadasTerminadas").setVar("EPT")
+					.setExpression("{\"fieldType\":\"estimated\",\"cardPlanned\":\"yes\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("RealPlanificadasTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("RealPlanificadasTerminadas").setVar("RPT")
+					.setExpression("{\"fieldType\":\"worked\",\"cardPlanned\":\"yes\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("EstimadasNoPlanificadasTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("EstimadasNoPlanificadasTerminadas").setVar("ENT")
+					.setExpression("{\"fieldType\":\"estimated\",\"cardPlanned\":\"no\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
+		metric = metricRepository.findByName("RealNoPlanificadasTerminadas");
+		if (metric == null) {
+			metric = new Metric();
+			metric.setName("RealNoPlanificadasTerminadas").setVar("RNT")
+					.setExpression("{\"fieldType\":\"worked\",\"cardPlanned\":\"no\",\"stateFinished\":\"yes\"}");
+			metricRepository.save(metric);
+		}
+
 	}
 }

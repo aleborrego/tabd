@@ -17,8 +17,8 @@ package org.aleborrego.tabd.scheduled;
 
 import org.aleborrego.tabd.domain.ScheduledTask;
 import org.aleborrego.tabd.domain.repository.ScheduledTaskRepository;
-import org.aleborrego.tabd.trellotools.LoaderException;
-import org.aleborrego.tabd.trellotools.TrelloLoader;
+import org.aleborrego.tabd.loader.Loader;
+import org.aleborrego.tabd.loader.LoaderException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -38,13 +38,16 @@ public class TasksRunner {
 
 	@Scheduled(fixedRate = 60000)
 	public void checkLoader() throws LoaderException {
-		for (ScheduledTask scheduledTask : scheduledTaskRepository.findByType(ScheduledTask.LOADER_TYPE)) {
-			String beanName = scheduledTask.getExtraInfo();
-			TrelloLoader loader = (TrelloLoader) applicationContext.getBean(beanName);
-			log.info("Loading from '{}'", beanName);
-			loader.load();
-			
-			scheduledTaskRepository.delete(scheduledTask);
+		for (ScheduledTask scheduledTask : scheduledTaskRepository.findAll()) {
+			if (ScheduledTask.LOADER_TYPE.equals(scheduledTask.getType())) {
+
+				String beanName = scheduledTask.getExtraInfo();
+				Loader loader = (Loader) applicationContext.getBean(beanName);
+				log.info("Loading from '{}'", beanName);
+				loader.load();
+
+				scheduledTaskRepository.delete(scheduledTask);
+			}
 		}
 	}
 
