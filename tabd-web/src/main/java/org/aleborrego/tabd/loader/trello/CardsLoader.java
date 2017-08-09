@@ -106,7 +106,7 @@ public class CardsLoader extends TrelloLoader {
 					log.info("Loading ticket for '{}'", cardName);
 					Ticket ticket = loadTicket(cardName);
 
-					if (ticket != null && state.getIsSprintRelated()) {
+					if (ticket != null && state != null && state.getIsSprintRelated()) {
 
 						Map<String, String> pluginFields = getPluginFields(card);
 
